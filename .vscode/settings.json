@@ -1,0 +1,9 @@
+{
+  "editor.formatOnSave":true, // pritter는 js,html,css 모두 formatting이 가능한대 저장할 때 format을 한다는 의미
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint":true // save시 eslint 의 rule대로 fix를 한다
+  }
+}
+
+// vscode 설정 
+// 저장할 때 Eslint와 prettier rule에 따라 fix를 해준다.  
