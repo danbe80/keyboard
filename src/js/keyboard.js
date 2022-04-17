@@ -6,6 +6,7 @@ export class Keyboard {
   사용방법은 #(해쉬)를 붙여 사용한다.
   */
   #swichEl;
+  #fontSelectEl;
   constructor() {
     this.#assignElement();
     this.#addEvent();
@@ -13,6 +14,7 @@ export class Keyboard {
 
   #assignElement() {
     this.#swichEl = document.getElementById("switch");
+    this.#fontSelectEl = document.getElementById("font");
   }
 
   #addEvent() {
@@ -21,6 +23,9 @@ export class Keyboard {
         "theme",
         event.target.checked ? "dark-mode" : ""
       );
+    });
+    this.#fontSelectEl.addEventListener("change", (event) => {
+      document.body.style.fontFamily = event.target.value;
     });
   }
 }
