@@ -23,6 +23,9 @@ export class Keyboard {
   #keyboardEl;
   #inputGroupEl;
   #inputEl;
+  // 키인지 마우스인지 판별
+  #keyPress = false;
+  #mouseDown = false;
   constructor() {
     this.#assignElement();
     this.#addEvent();
@@ -47,10 +50,45 @@ export class Keyboard {
     document.addEventListener("keydown", this.#onKeyDown.bind(this));
     document.addEventListener("keyup", this.#onKeyUp.bind(this));
     this.#inputEl.addEventListener("input", this.#onInput.bind(this));
+    this.#keyboardEl.addEventListener(
+      "mousedown",
+      this.#onMouseDown.bind(this)
+    );
+    document.addEventListener("mouseup", this.#onMouseUp.bind(this));
   }
 
   // 이벤트 핸들러는 따로 분리해서 관리하는 것을 추천
+  // Mouse event
+  #onMouseDown(event) {
+    if (this.#keyPress) return;
+    this.#mouseDown = true;
+    event.target.closest("div.key")?.classList.add("active");
+  }
+  #onMouseUp(event) {
+    if (this.#keyPress) return;
+    this.#mouseDown = false;
+    // document에 이벤트리스너를 한 이유는 마우스 클릭 후 다른 곳에서 mouseup을 할 수 있기 때문에
+    const keyEl = event.target.closest("div.key");
+    const isActive = !!keyEl?.classList.contains("active");
+    const val = keyEl?.dataset.val;
+    // 띄어쓰기, 지우기 빼고 일반 영문을 누를 때
+    if (isActive && !!val && val !== "Space" && val !== "Backspace") {
+      this.#inputEl.value += val;
+    }
+    // 공백을 누를 때
+    if (isActive && val === "Space") {
+      this.#inputEl.value += " ";
+    }
+    // 지우기를 누를 때
+    if (isActive && val === "Backspace") {
+      this.#inputEl.value = this.#inputEl.value.slice(0, -1);
+    }
+    this.#keyboardEl.querySelector(".active")?.classList.remove("active");
+  }
+  // keyboard event
   #onKeyDown(event) {
+    if (this.#mouseDown) return;
+    this.#keyPress = true;
     // 눌린 key가 어떤 것인지 찾고, 그 요소 class에 active를 추가
     this.#keyboardEl
       .querySelector(`[data-code=${event.code}]`)
@@ -58,15 +96,19 @@ export class Keyboard {
     // ? => Optional chaining if문을 대체할 수 있음.
   }
   #onKeyUp(event) {
+    if (this.#mouseDown) return;
+    this.#keyPress = false;
     this.#keyboardEl
       .querySelector(`[data-code=${event.code}]`)
       ?.classList.remove("active");
   }
+  // input event
   #onInput(event) {
     // 한글 입력 값 문제 때문에 input으로 이벤트 변경함
     // 한글 입력 시 에러문을 띄우는 이벤트 (정규식 test method 사용)
-    // 한글 입력 시 key 값이 process로 나오기 때문에 keyCode 값을 사용함. 한글 (229)
-    /* this.#inputGroupEl.classList.toggle(
+    /* 
+    한글 입력 시 key 값이 process로 나오기 때문에 keyCode 값을 사용함. 한글 (229)
+    this.#inputGroupEl.classList.toggle(
         "error",
         event.keyCode === 229 ? true : false
       );
@@ -79,6 +121,7 @@ export class Keyboard {
     // 한글 입력 값을 빈 string으로 바꾸어 입력이 되지 않은 것은 느낌을 냄.
     event.target.value = event.target.value.replace(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/, "");
   }
+  // change event
   #onChangeTheme(event) {
     document.documentElement.setAttribute(
       "theme",
